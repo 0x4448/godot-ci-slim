@@ -1,0 +1,30 @@
+---
+name: Build
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        versions:
+          - 4.2.2
+        platforms:
+          - web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Build Docker Images
+        uses: docker/build-push-action@1a162644f9a7e87d8f4b053101d1d9a712edc18c # v6.3.0
+        with:
+          context: src
+          build-args: |
+            GODOT_VERSION=${{ matrix.versions }}
+            EXPORT_PLATFORM=${{ matrix.platforms }}
