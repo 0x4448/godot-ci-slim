@@ -14,6 +14,10 @@
     },
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+        "ghcr.io/0x4448/features/actionlint:1": {
+            "version": "v1.7.1",
+            "hash": "f53c34493657dfea83b657e4b62cc68c25fbc383dff64c8d581613b037aacaa3"
+        },
         "ghcr.io/0x4448/features/hadolint:1": {
             "version": "v2.12.0",
             "hash": "56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010"
