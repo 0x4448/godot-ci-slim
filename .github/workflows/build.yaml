@@ -2,8 +2,13 @@
 name: Build
 
 on:
-  workflow_call:
   workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
 
 jobs:
   build:
@@ -21,10 +26,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Docker Images
         uses: docker/build-push-action@1a162644f9a7e87d8f4b053101d1d9a712edc18c # v6.3.0
         with:
+          push: true
           context: src
           build-args: |
             GODOT_VERSION=${{ matrix.versions }}
             EXPORT_PLATFORM=${{ matrix.platforms }}
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ matrix.versions }}-${{ matrix.platforms }}
