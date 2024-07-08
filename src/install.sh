@@ -1,19 +1,12 @@
 #!/bin/bash
 set -eu
 
-
 tempDir=$(mktemp -d)
 pushd "$tempDir"
 trap 'popd; rm -rf "$tempDir"' EXIT
 
 
-# Git LFS
-curl -fsSL -o git-lfs.tar.gz https://github.com/git-lfs/git-lfs/releases/download/v3.5.1/git-lfs-linux-amd64-v3.5.1.tar.gz
-tar xf git-lfs.tar.gz
-find . -type f -name git-lfs -exec install {} /usr/local/bin/git-lfs \;
-
-
-# Godot
+### Install Godot ###
 apiUrl="https://api.github.com/repos/godotengine/godot/releases/tags/$GODOT_VERSION-stable"
 
 curl -s "$apiUrl" |
@@ -26,7 +19,7 @@ find . -type f -name 'Godot_*' -exec mv {} /usr/local/bin/godot \;
 chmod +x /usr/local/bin/godot
 
 
-# Godot Templates
+### Install Godot Templates ###
 curl -s "$apiUrl" |
   jq --raw-output \
   '.assets[] | select(.name | contains("stable_export")) | .browser_download_url' |
