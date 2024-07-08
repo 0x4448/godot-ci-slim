@@ -1,32 +1,19 @@
 #!/bin/bash
 set -eu
 
-tempDir=$(mktemp -d)
-pushd "$tempDir"
-trap 'popd; rm -rf "$tempDir"' EXIT
+apt-get update
+apt-get install --yes --no-install-recommends \
+  ca-certificates \
+  git \
+  git-lfs
 
+if [ "$DOTNET" == "true" ]; then
+  apt-get install --yes --no-install-recommends curl
+  curl -fsLOS https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb
+  dpkg -i packages-microsoft-prod.deb
+  rm packages-microsoft-prod.deb
+  apt-get update
+  apt-get install --yes --no-install-recommends dotnet-sdk-8.0
+fi
 
-### Install Godot ###
-apiUrl="https://api.github.com/repos/godotengine/godot/releases/tags/$GODOT_VERSION-stable"
-
-curl -s "$apiUrl" |
-  jq --raw-output \
-  '.assets[] | select(.name | contains("x86_64") and contains("stable_linux")) | .browser_download_url' |
-  xargs curl -fsSL -o godot.zip
-
-unzip godot.zip
-find . -type f -name 'Godot_*' -exec mv {} /usr/local/bin/godot \;
-chmod +x /usr/local/bin/godot
-
-
-### Install Godot Templates ###
-curl -s "$apiUrl" |
-  jq --raw-output \
-  '.assets[] | select(.name | contains("stable_export")) | .browser_download_url' |
-  xargs curl -fsSL -o templates.tpz
-
-unzip templates.tpz
-dest="/usr/local/share/godot/export_templates/$GODOT_VERSION.stable"
-mkdir -p "$dest"
-find templates/ -type f -not -name 'version.txt' -and -not -name "$EXPORT_PLATFORM*" -exec rm {} \;
-cp -R templates/* "$dest"
+rm -rf /var/lib/apt/lists/*
