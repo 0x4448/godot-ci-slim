@@ -2,7 +2,29 @@
 name: Build
 
 on:
+  workflow_call:
+    inputs:
+      godotVersion:
+        type: string
+        required: true
+      exportPlatform:
+        type: string
+        required: true
+      dotNet:
+        type: boolean
+        required: true
+
   workflow_dispatch:
+    inputs:
+      godotVersion:
+        type: string
+        required: true
+      exportPlatform:
+        type: string
+        required: true
+      dotNet:
+        type: boolean
+        required: true
 
 permissions:
   contents: read
@@ -15,68 +37,50 @@ jobs:
     name: Build
     runs-on: ubuntu-22.04
 
-    strategy:
-      matrix:
-        versions:
-          - 4.2.2
-        platforms:
-          - web
-
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
+
+      - name: Get Tag
+        id: get-tag
+        run: |
+          if [ "${{ inputs.dotNet }}" == "true" ]; then
+            echo "tag=${{ github.repository }}:${{ inputs.godotVersion }}-dotnet" > "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.repository }}:${{ inputs.godotVersion }}" > "$GITHUB_OUTPUT"
+          fi
+
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@1a162644f9a7e87d8f4b053101d1d9a712edc18c # v6.3.0
+        with:
+          load: true
+          context: src
+          build-args: |
+            GODOT_VERSION=${{ inputs.godotVersion }}
+            EXPORT_PLATFORM=${{ inputs.exportPlatform }}
+            DOTNET=${{ inputs.dotNet }}
+          tags: |
+            ghcr.io/${{ steps.get-tag.outputs.tag }}-${{ inputs.exportPlatform }}
+
+
       - name: Login to GitHub Container Registry
-        if: ${{ github.ref == 'refs/heads/main' }}
         uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker Images
+
+      - name: Push Docker Image
         uses: docker/build-push-action@1a162644f9a7e87d8f4b053101d1d9a712edc18c # v6.3.0
         with:
-          push: ${{ github.ref == 'refs/heads/main' }}
+          push: true
           context: src
           build-args: |
-            GODOT_VERSION=${{ matrix.versions }}
-            EXPORT_PLATFORM=${{ matrix.platforms }}
-            DOTNET=false
+            GODOT_VERSION=${{ inputs.godotVersion }}
+            EXPORT_PLATFORM=${{ inputs.exportPlatform }}
+            DOTNET=${{ inputs.dotNet }}
           tags: |
-            ghcr.io/${{ github.repository }}:${{ matrix.versions }}-${{ matrix.platforms }}
-
-  build-dotnet:
-    name: Build .NET
-    runs-on: ubuntu-22.04
-
-    strategy:
-      matrix:
-        versions:
-          - 4.2.2
-        platforms:
-          - linux
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Login to GitHub Container Registry
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Docker Images
-        uses: docker/build-push-action@1a162644f9a7e87d8f4b053101d1d9a712edc18c # v6.3.0
-        with:
-          push: ${{ github.ref == 'refs/heads/main' }}
-          context: src
-          build-args: |
-            GODOT_VERSION=${{ matrix.versions }}
-            EXPORT_PLATFORM=${{ matrix.platforms }}
-            DOTNET=true
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ matrix.versions }}-${{ matrix.platforms }}
+            ghcr.io/${{ steps.get-tag.outputs.tag }}-${{ inputs.exportPlatform }}

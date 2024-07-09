@@ -1,0 +1,50 @@
+---
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      godotVersion:
+        type: string
+        required: true
+
+  workflow_dispatch:
+    inputs:
+      godotVersion:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+jobs:
+  release:
+    name: Release
+    uses: ./.github/workflows/build.yaml
+
+    with:
+      godotVersion: ${{ inputs.godotVersion }}
+      exportPlatform: ${{ matrix.platforms }}
+      dotNet: false
+
+    strategy:
+      matrix:
+        platforms:
+          - web
+
+  release-dotnet:
+    name: Release .NET
+    uses: ./.github/workflows/build.yaml
+
+    with:
+      godotVersion: ${{ inputs.godotVersion }}
+      exportPlatform: ${{ matrix.platforms }}
+      dotNet: true
+
+    strategy:
+      matrix:
+        platforms:
+          - linux
