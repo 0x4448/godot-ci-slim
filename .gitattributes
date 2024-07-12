@@ -1,1 +1,64 @@
+# Custom macro attributes can be defined only in top-level gitattributes files.
+[attr]godot-lfs filter=lfs diff=lfs merge=lfs -text
+
+# Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
+
+# Godot binary files
+*.[Ss][Cc][Nn] godot-lfs
+*.[Rr][Ee][Ss] godot-lfs
+*.[Mm][Aa][Tt][Ee][Rr][Ii][Aa][Ll] godot-lfs
+*.[Aa][Nn][Ii][Mm] godot-lfs
+*.[Mm][Ee][Ss][Hh] godot-lfs
+
+# Image formats
+*.[Bb][Mm][Pp] godot-lfs
+*.[Dd][Dd][Ss] godot-lfs
+*.[Kk][Tt][Xx] godot-lfs
+*.[Ee][Xx][Rr] godot-lfs
+*.[Hh][Dd][Rr] godot-lfs
+*.[Jj][Pp][Gg] godot-lfs
+*.[Jj][Pp][Ee][Gg] godot-lfs
+*.[Pp][Nn][Gg] godot-lfs
+*.[Tt][Gg][Aa] godot-lfs
+*.[Ww][Ee][Bb][Pp] godot-lfs
+
+# Audio and video formats
+*.[Mm][Pp][3] godot-lfs
+*.[Ww][Aa][Vv] godot-lfs
+*.[Oo][Gg][Gg] godot-lfs
+*.[Oo][Gg][Xx] godot-lfs
+*.[Oo][Gg][Vv] godot-lfs
+
+# Fonts
+*.[Tt][Tt][Ff] godot-lfs
+*.[Tt][Tt][Cc] godot-lfs
+*.[Oo][Tt][Ff] godot-lfs
+*.[Oo][Tt][Cc] godot-lfs
+*.[Ww][Oo][Ff][Ff] godot-lfs
+*.[Ww][Oo][Ff][Ff][2] godot-lfs
+*.[Ff][Nn][Tt] godot-lfs
+
+# 3D formats
+*.[Gg][Ll][Tt][Ff] godot-lfs
+*.[Gg][Ll][Bb] godot-lfs
+*.[Bb][Ll][Ee][Nn][Dd] godot-lfs
+*.[Bb][Ll][Ee][Nn][Dd][1] godot-lfs
+*.[Dd][Aa][Ee] godot-lfs
+*.[Oo][Bb][Jj] godot-lfs
+*.[Mm][Tt][Ll] godot-lfs
+*.[Ff][Bb][Xx] godot-lfs
+
+# Build
+*.[Dd][Ll][Ll] godot-lfs
+*.[Dd][Yy][Ll][Ii][Bb] godot-lfs
+
+# Packaging
+*.[Zz][Ii][Pp] godot-lfs
+*.[7][Zz] godot-lfs
+*.[Gg][Zz] godot-lfs
+*.[Bb][Zz][2] godot-lfs
+*.[Xx][Zz] godot-lfs
+*.[Rr][Aa][Rr] godot-lfs
+*.[Tt][Aa][Rr] godot-lfs
+*.[Ff][Ii][Ll][Ee] godot-lfs
