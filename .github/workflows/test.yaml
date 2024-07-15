@@ -4,61 +4,40 @@ name: Test Image
 on:
   workflow_call:
     inputs:
-      godotVersion:
+      imageTag:
         type: string
-        required: true
-      exportPlatform:
-        type: string
-        required: true
-      dotNet:
-        type: boolean
         required: true
 
   workflow_dispatch:
     inputs:
-      godotVersion:
+      imageTag:
         type: string
-        required: true
-      exportPlatform:
-        type: string
-        required: true
-      dotNet:
-        type: boolean
         required: true
 
 permissions:
   contents: read
-  packages: write
-  attestations: write
-  id-token: write
 
 jobs:
-  build:
-    name: Build
+  export:
+    name: Export
     runs-on: ubuntu-22.04
+    container: ghcr.io/${{ github.repository }}:${{ inputs.imageTag }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-
-      - name: Get Tag
-        id: get-tag
+      - name: Setup container
         run: |
-          if [ "${{ inputs.dotNet }}" == "true" ]; then
-            echo "tag=${{ github.repository }}:${{ inputs.godotVersion }}-dotnet" > "$GITHUB_OUTPUT"
-          else
-            echo "tag=${{ github.repository }}:${{ inputs.godotVersion }}" > "$GITHUB_OUTPUT"
-          fi
-
-
-      - name: Pull Docker Image
-        run: docker pull ghcr.io/${{ steps.get-tag.outputs.tag }}-${{ inputs.exportPlatform }}
-
+          godotVersion=$(godot --headless --version | grep -Eo '^[0-9]+\.[0-9]+\.*[0-9]*' | sed 's/\.$//g')
+          templatePath=local/share/godot/export_templates
+          mkdir -v -p "$HOME/.$templatePath"
+          mv "/usr/$templatePath/$godotVersion.stable" "$HOME/.$templatePath"
 
       - name: Test Export
+        shell: bash
         run: |
           mkdir -v -p export
-          if [ "${{ inputs.exportPlatform }}" == "web" ]; then
+          if [[ "${{ inputs.imageTag }}" =~ "web" ]]; then
             godot --headless --verbose --path sample_project --export-release Web "$GITHUB_WORKSPACE/export/index.html"
           fi
