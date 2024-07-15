@@ -1,0 +1,64 @@
+---
+name: Test Image
+
+on:
+  workflow_call:
+    inputs:
+      godotVersion:
+        type: string
+        required: true
+      exportPlatform:
+        type: string
+        required: true
+      dotNet:
+        type: boolean
+        required: true
+
+  workflow_dispatch:
+    inputs:
+      godotVersion:
+        type: string
+        required: true
+      exportPlatform:
+        type: string
+        required: true
+      dotNet:
+        type: boolean
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+
+      - name: Get Tag
+        id: get-tag
+        run: |
+          if [ "${{ inputs.dotNet }}" == "true" ]; then
+            echo "tag=${{ github.repository }}:${{ inputs.godotVersion }}-dotnet" > "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.repository }}:${{ inputs.godotVersion }}" > "$GITHUB_OUTPUT"
+          fi
+
+
+      - name: Pull Docker Image
+        run: docker pull ghcr.io/${{ steps.get-tag.outputs.tag }}-${{ inputs.exportPlatform }}
+
+
+      - name: Test Export
+        run: |
+          mkdir -v -p export
+          if [ "${{ inputs.exportPlatform }}" == "web" ]; then
+            godot --headless --verbose --path sample_project --export-release Web "$GITHUB_WORKSPACE/export/index.html"
+          fi
