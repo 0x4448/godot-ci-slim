@@ -46,9 +46,9 @@ jobs:
         id: get-tag
         run: |
           if [ "${{ inputs.dotNet }}" == "true" ]; then
-            echo "tag=${{ github.repository }}:${{ inputs.godotVersion }}-dotnet" > "$GITHUB_OUTPUT"
+            echo "tag=ghcr.io/${{ github.repository }}:${{ inputs.godotVersion }}-dotnet-${{ inputs.exportPlatform }}" > "$GITHUB_OUTPUT"
           else
-            echo "tag=${{ github.repository }}:${{ inputs.godotVersion }}" > "$GITHUB_OUTPUT"
+            echo "tag=ghcr.io/${{ github.repository }}:${{ inputs.godotVersion }}-${{ inputs.exportPlatform }}" > "$GITHUB_OUTPUT"
           fi
 
 
@@ -62,7 +62,11 @@ jobs:
             EXPORT_PLATFORM=${{ inputs.exportPlatform }}
             DOTNET=${{ inputs.dotNet }}
           tags: |
-            ghcr.io/${{ steps.get-tag.outputs.tag }}-${{ inputs.exportPlatform }}
+            ${{ steps.get-tag.outputs.tag }}
+
+
+      - name: Test Docker Image
+        run: docker run --rm --mount type=bind,source=.,target=/github/home --workdir /github/home ${{ steps.get-tag.outputs.tag }} test.sh ${{ inputs.exportPlatform }}
 
 
       - name: Login to GitHub Container Registry
@@ -83,4 +87,4 @@ jobs:
             EXPORT_PLATFORM=${{ inputs.exportPlatform }}
             DOTNET=${{ inputs.dotNet }}
           tags: |
-            ghcr.io/${{ steps.get-tag.outputs.tag }}-${{ inputs.exportPlatform }}
+            ${{ steps.get-tag.outputs.tag }}

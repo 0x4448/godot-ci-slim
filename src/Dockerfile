@@ -11,6 +11,7 @@ COPY --from=builder /usr/local/bin/godot /usr/local/bin/godot
 COPY --from=builder /usr/local/share/godot/ /usr/local/share/godot/
 COPY --from=builder /usr/bin/brotli /usr/bin/brotli
 COPY /install.sh /install.sh
+COPY /test.sh /usr/local/bin/test.sh
 
 
 
