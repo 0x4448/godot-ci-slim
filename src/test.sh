@@ -8,6 +8,8 @@ mv "/usr/$templatePath/$godotVersion.stable" "$HOME/.$templatePath"
 
 mkdir -v -p "$(pwd)/export"
 
-if [[ "$1" =~ "web" ]]; then
+if [[ "$1" =~ "linux" ]]; then
+  godot --headless --verbose --path sample_project --export-release Linux/X11 "$(pwd)/export/game"
+elif [[ "$1" =~ "web" ]]; then
   godot --headless --verbose --path sample_project --export-release Web "$(pwd)/export/index.html"
 fi

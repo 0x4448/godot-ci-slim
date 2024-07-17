@@ -33,6 +33,7 @@ jobs:
     strategy:
       matrix:
         platforms:
+          - linux
           - web
 
   release-dotnet:
