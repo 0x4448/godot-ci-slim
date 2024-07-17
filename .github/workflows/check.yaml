@@ -1,0 +1,46 @@
+---
+name: Check Godot Engine Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Export
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+
+    steps:
+      - name: Check for new version
+        id: check
+        shell: bash
+        run: |
+          latest=$(curl -s https://api.github.com/repos/godotengine/godot/releases/latest)
+          name=$(echo "$latest" | jq --raw-output '.name')
+          version=$(echo "$name" | grep -Eo '^[0-9]+\.[0-9]+\.*[0-9]*' | sed 's/\.$//g')
+          draft=$(echo "$latest" | jq --raw-output '.draft')
+          prerelease=$(echo "$latest" | jq --raw-output '.prerelease')
+
+          if [[ "$draft" == "true" || "$prerelease" == "true" ]]; then
+            echo "version=latest" > "$GITHUB_OUTPUT"
+          elif docker manifest inspect "ghcr.io/${{ github.repository }}:$version-linux" > /dev/null; then
+            echo "version=latest" > "$GITHUB_OUTPUT"
+          else
+            echo "version=$version" > "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    name: Release new image
+    needs: check
+    if: ${{ needs.check.outputs.version != 'latest' }}
+
+    uses: ./.github/workflows/release.yaml
+    with:
+      godotVersion: ${{ needs.check.outputs.version }}
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
