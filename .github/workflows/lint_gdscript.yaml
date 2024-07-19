@@ -1,0 +1,33 @@
+---
+name: Lint GDScript
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.gd'
+
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
+      statuses: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Setup GDScript Toolkit
+        uses: Scony/godot-gdscript-toolkit@9c4fa1cd596149d71e9d867416f3bb7b3a2fed3e # 4.2.2
+
+      - name: gdformat
+        run: gdformat --check src/
+
+      - name: gdlint
+        run: gdlint src/
