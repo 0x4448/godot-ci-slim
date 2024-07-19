@@ -2,6 +2,9 @@
 name: Check Godot Engine Release
 
 on:
+  schedule:
+    - cron: '14 3,15 * * *'
+
   workflow_dispatch:
 
 jobs:
