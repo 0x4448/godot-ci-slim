@@ -49,3 +49,30 @@ jobs:
       matrix:
         platforms:
           - linux
+
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-22.04
+    needs: [release, release-dotnet]
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Create release
+        shell: bash
+        run: |
+          latestRelease=$(curl -s https://api.github.com/repos/godotengine/godot/releases/latest)
+          latestReleaseName=$(echo "$latestRelease" | jq --raw-output '.name')
+          release=$(curl -s https://api.github.com/repos/godotengine/godot/releases/tags/${{ inputs.godotVersion }}-stable)
+          releaseName=$(echo "$release" | jq --raw-output '.name')
+
+          if [[ "$releaseName" == "$latestReleaseName" ]]; then
+            echo "$release" | jq --raw-output '.body' | gh release create "$releaseName" --notes-file -
+          else
+            echo "$release" | jq --raw-output '.body' | gh release create "$releaseName" --latest=false --notes-file -
+          fi
