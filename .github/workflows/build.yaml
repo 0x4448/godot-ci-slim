@@ -42,6 +42,10 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
 
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@4fd812986e6c8c2a69e18311145f9371337f27d4 # v3.4.0
+
+
       - name: Get Tag
         id: get-tag
         run: |
@@ -57,6 +61,7 @@ jobs:
         with:
           load: true
           context: src
+          cache-from: type=registry,ref=${{ steps.get-tag.outputs.tag }}-buildcache
           build-args: |
             GODOT_VERSION=${{ inputs.godotVersion }}
             EXPORT_PLATFORM=${{ inputs.exportPlatform }}
@@ -82,6 +87,7 @@ jobs:
         with:
           push: true
           context: src
+          cache-to: type=registry,ref=${{ steps.get-tag.outputs.tag }}-buildcache,mode=max
           build-args: |
             GODOT_VERSION=${{ inputs.godotVersion }}
             EXPORT_PLATFORM=${{ inputs.exportPlatform }}
