@@ -1,7 +1,10 @@
 #!/bin/bash
+# Builder stage: download Godot and templates, which will be copied to the final image
+
 set -eu
 
 ### Install Packages ###
+echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99retries
 apt-get update
 apt-get install --yes --no-install-recommends \
     brotli \
@@ -18,22 +21,21 @@ trap 'popd; rm -rf "$tempDir"' EXIT
 
 
 ### Install Godot ###
-apiUrl="https://api.github.com/repos/godotengine/godot/releases/tags/$GODOT_VERSION-stable"
-
-if [[ "$DOTNET" == "true" ]]; then
+if [ "$DOTNET" == "true" ]; then
   label="stable_mono_linux"
 else
   label="stable_linux"
 fi
 
-curl -s "$apiUrl" |
-  jq --raw-output \
+release=$(curl -fsLS --retry 5 "https://api.github.com/repos/godotengine/godot/releases/tags/$GODOT_VERSION-stable")
+
+echo "$release" | jq --raw-output \
   ".assets[] | select(.name | contains(\"x86_64\") and contains(\"$label\")) | .browser_download_url" |
-  xargs curl -fsSL -o godot.zip
+  xargs curl -fsLS --retry 5 -o godot.zip
 
 unzip godot.zip
 
-if [[ "$DOTNET" == "true" ]]; then
+if [ "$DOTNET" == "true" ]; then
   find . -maxdepth 2 -type d -name 'GodotSharp' -exec mv {} /usr/local/bin/ \;
 else
   mkdir /usr/local/bin/GodotSharp/
@@ -44,14 +46,13 @@ chmod +x /usr/local/bin/godot
 
 
 ### Install Godot Templates ###
-curl -s "$apiUrl" |
-  jq --raw-output \
+echo "$release" | jq --raw-output \
   '.assets[] | select(.name | contains("stable_export")) | .browser_download_url' |
-  xargs curl -fsSL -o templates.tpz
+  xargs curl -fsLS --retry 5 -o templates.tpz
 
 unzip templates.tpz
 
-if [[ "$DOTNET" == "true" ]]; then
+if [ "$DOTNET" == "true" ]; then
   dest="/usr/local/share/godot/export_templates/$GODOT_VERSION.stable.mono"
 else
   dest="/usr/local/share/godot/export_templates/$GODOT_VERSION.stable"
