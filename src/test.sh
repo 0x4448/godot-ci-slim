@@ -1,10 +1,9 @@
 #!/bin/bash
 set -eu
 
-godotVersion=$(godot --headless --version | grep -Eo '^[0-9]+\.[0-9]+\.*[0-9]*' | sed 's/\.$//g')
 templatePath=local/share/godot/export_templates
 mkdir -v -p "$HOME/.$templatePath"
-mv "/usr/$templatePath/$godotVersion.stable" "$HOME/.$templatePath"
+mv /usr/${templatePath}/* "$HOME/.$templatePath"
 
 mkdir -v -p "$(pwd)/export"
 

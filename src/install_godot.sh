@@ -34,14 +34,12 @@ curl -s "$apiUrl" |
 unzip godot.zip
 
 if [[ "$DOTNET" == "true" ]]; then
-  folder=$(find . -type d -name 'Godot_*')
-  mv "$folder" /usr/local/godot/
-  ln -s "$(find /usr/local/godot -type f -name 'Godot_*')" /usr/local/bin/godot
+  find . -maxdepth 2 -type d -name 'GodotSharp' -exec mv {} /usr/local/bin/ \;
 else
-  mkdir /usr/local/godot/
-  find . -type f -name 'Godot_*' -exec mv {} /usr/local/bin/godot \;
+  mkdir /usr/local/bin/GodotSharp/
 fi
 
+find . -type f -name 'Godot_*' -exec mv {} /usr/local/bin/godot \;
 chmod +x /usr/local/bin/godot
 
 
@@ -52,7 +50,13 @@ curl -s "$apiUrl" |
   xargs curl -fsSL -o templates.tpz
 
 unzip templates.tpz
-dest="/usr/local/share/godot/export_templates/$GODOT_VERSION.stable"
+
+if [[ "$DOTNET" == "true" ]]; then
+  dest="/usr/local/share/godot/export_templates/$GODOT_VERSION.stable.mono"
+else
+  dest="/usr/local/share/godot/export_templates/$GODOT_VERSION.stable"
+fi
+
 mkdir -p "$dest"
 
 # Remove unnecessary templates to make the image smaller
