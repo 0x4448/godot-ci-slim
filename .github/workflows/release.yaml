@@ -70,9 +70,10 @@ jobs:
           latestReleaseName=$(echo "$latestRelease" | jq --raw-output '.name')
           release=$(curl -s https://api.github.com/repos/godotengine/godot/releases/tags/${{ inputs.godotVersion }}-stable)
           releaseName=$(echo "$release" | jq --raw-output '.name')
+          title='${{ inputs.godotVersion }}-stable'
 
           if [[ "$releaseName" == "$latestReleaseName" ]]; then
-            echo "$release" | jq --raw-output '.body' | gh release create "$releaseName" --notes-file -
+            echo "$release" | jq --raw-output '.body' | gh release create "$releaseName" --title "$title" --notes-file -
           else
-            echo "$release" | jq --raw-output '.body' | gh release create "$releaseName" --latest=false --notes-file -
+            echo "$release" | jq --raw-output '.body' | gh release create "$releaseName" --title "$title" --latest=false --notes-file -
           fi
