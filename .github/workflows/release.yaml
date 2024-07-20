@@ -70,9 +70,24 @@ jobs:
           latestReleaseName=$(echo "$latestRelease" | jq --raw-output '.name')
           release=$(curl -s https://api.github.com/repos/godotengine/godot/releases/tags/${{ inputs.godotVersion }}-stable)
           releaseName=$(echo "$release" | jq --raw-output '.name')
+          title='${{ inputs.godotVersion }}-stable'
 
-          if [[ "$releaseName" == "$latestReleaseName" ]]; then
-            echo "$release" | jq --raw-output '.body' | gh release create "$releaseName" --notes-file -
-          else
-            echo "$release" | jq --raw-output '.body' | gh release create "$releaseName" --latest=false --notes-file -
+          cat <<'EOF' > /tmp/notes
+          - `docker pull ghcr.io/${{ github.repository }}:${{ inputs.godotVersion }}-linux`
+          - `docker pull ghcr.io/${{ github.repository }}:${{ inputs.godotVersion }}-web`
+          - `docker pull ghcr.io/${{ github.repository }}:${{ inputs.godotVersion }}-dotnet-linux`
+          EOF
+
+          declare -a args
+
+          if [ "${{ github.ref_name }}" != "main" ]; then
+            args+=("--draft")
           fi
+
+          if [ "$releaseName" == "$latestReleaseName" ]; then
+            args+=("--latest")
+          else
+            args+=("--latest=false")
+          fi
+
+          gh release create "$releaseName" --target "${{ github.ref_name }}" --title "$title" --notes-file /tmp/notes "${args[@]}"
